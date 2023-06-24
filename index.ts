@@ -29,7 +29,7 @@ server.ready().then(() => {
 // usually this is where we try to connect to our DB.
 server.listen(
     {
-        port: Number(process.env.PORT),
+        port: Number(process.env.PORT ?? 9999),
     },
     (err, address) => {
         if (err) {
