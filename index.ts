@@ -3,7 +3,11 @@ import fastify, { FastifyRequest, FastifyReply } from "fastify";
 import fastifyIO from "fastify-socket.io";
 
 const server = fastify();
-server.register(fastifyIO);
+server.register(fastifyIO, {
+    cors: {
+        origin: "*",
+    },
+});
 
 /**
  * Backend flow:
