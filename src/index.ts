@@ -1,9 +1,12 @@
-import { ServerSocket } from "./src/socket";
+import { ServerSocket } from "./socket";
 import fastify, { FastifyRequest, FastifyReply } from "fastify";
 import fastifyIO from "fastify-socket.io";
 
 const server = fastify();
 server.register(fastifyIO, {
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 2 * 60_000 // 2 minutes
+    },
     cors: {
         origin: "*",
     },
@@ -36,7 +39,7 @@ server.listen(
         port: Number(process.env.PORT ?? 9999),
     },
     (err, address) => {
-        if (err) {
+        if (err != null) {
             console.info("ERROR", err);
         }
         console.info("server running on", address);

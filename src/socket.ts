@@ -22,7 +22,7 @@ export class ServerSocket {
 
     public registerConnectionEvent() {
         this.io.on("connection", (socket: Socket) => {
-            console.info("Terhubung dengan socket", socket.id);
+            console.info("[CONNECTED] Socket ID:", socket.id);
             this.registerEventListeners(socket);
         });
     }
@@ -40,7 +40,7 @@ export class ServerSocket {
         );
         socket.on(
             Event.CREATE_NEW_GAME,
-            handleCreateNewGame.bind(this, socket)
+            handleCreateNewGame.bind(this, socket, this.io)
         );
         socket.on(
             Event.GAME_END,

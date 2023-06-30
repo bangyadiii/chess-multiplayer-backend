@@ -2,17 +2,18 @@ import { Server, Socket } from "socket.io";
 import { Event } from "./event/event";
 import { StatusJoinDTO } from "./dto/status.dto";
 import { NewMoveDTO } from "./dto/new_move.dto";
+import { Chess, ChessInstance } from "chess.js";
 
 export interface GameSession {
     roomId: string;
-    gameId: string;
+    gameInstance: ChessInstance;
     players: Record<string, string>;
 }
 
 const gameSessions: Map<string, GameSession> = new Map();
 
 export function handleDisconnect(socket: Socket, reason: any) {
-    console.info("Client terputus", socket.id, "\nreason:", reason);
+    console.info("[DISCONNECTED] Socket ID:", socket.id, "=> reason:", reason);
 }
 
 export function handleCallUser(socket: Socket, io: Server, data: any) {
@@ -27,7 +28,7 @@ export function handleAcceptCall(socket: Socket, io: Server, data: any) {
 }
 
 export function handleEndGame(socket: Socket, io: Server, gameId: string) {
-    socket.leave(gameId)
+    socket.leave(gameId);
     console.debug("Room size:", io.sockets.adapter.rooms.get(gameId)?.size);
 }
 
@@ -35,7 +36,7 @@ export interface JoinGameRequest {
     gameId: string;
     userName: string;
     isCreator: boolean;
-    mySocketId?: string;
+    socketId?: string;
 }
 
 export function handlePlayerJoinsGame(
@@ -62,16 +63,8 @@ export function handlePlayerJoinsGame(
     }
 
     if (room.size < 2) {
-        payload.mySocketId = socket.id;
+        payload.socketId = socket.id;
         socket.join(payload.gameId);
-
-        console.debug("Room size:", room.size);
-
-        if (room.size === 2) {
-            io.sockets
-                .in(payload.gameId)
-                .emit(Event.START_GAME, payload.userName);
-        }
 
         io.sockets.in(payload.gameId).emit(Event.PLAYER_JOINED_ROOM, payload);
     } else {
@@ -82,14 +75,20 @@ export function handlePlayerJoinsGame(
 
         socket.emit(Event.JOIN_STATUS, statusData);
     }
+
+    console.debug("Room size:", room.size);
 }
 
-export function handleCreateNewGame(socket: Socket, gameId: string) {
+export async function handleCreateNewGame(
+    socket: Socket,
+    io: Server,
+    gameId: string
+) {
     const playerId = socket.id;
 
     const session: GameSession = {
         roomId: gameId,
-        gameId: gameId,
+        gameInstance: new Chess(),
         players: {
             player1: playerId,
         },
@@ -97,14 +96,12 @@ export function handleCreateNewGame(socket: Socket, gameId: string) {
     gameSessions.set(gameId, session);
 
     socket.join(gameId);
-    socket.emit(Event.CREATE_NEW_GAME, { gameId, mySocketId: socket.id });
 
-    socket.join(gameId);
-    console.debug("socket id:", socket.id, "join room:", gameId);
 }
 
-export function handleNewMove(socket: Socket, io: Server, move: NewMoveDTO) {
-    io.to(move.gameId).emit(Event.OPPONENT_MOVE, move);
+export function handleNewMove(socket: Socket, io: Server, payload: NewMoveDTO) {
+    console.log("payload", payload);
+    io.to(payload.gameId).emit(Event.OPPONENT_MOVE, payload.move);
 }
 
 export function handleRequestUserName(socket: Socket, io: Server, gameId: any) {
