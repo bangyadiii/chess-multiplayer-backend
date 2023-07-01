@@ -1,11 +1,20 @@
 import { ServerSocket } from "./socket";
 import fastify, { FastifyRequest, FastifyReply } from "fastify";
+import { instrument } from "@socket.io/admin-ui";
 import fastifyIO from "fastify-socket.io";
+import fastifyCors from "@fastify/cors";
 
 const server = fastify();
+
+server.register(fastifyCors, {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    
+})
+
 server.register(fastifyIO, {
     connectionStateRecovery: {
-        maxDisconnectionDuration: 2 * 60_000 // 2 minutes
+        maxDisconnectionDuration: 2 * 60_000, // 2 minutes
     },
     cors: {
         origin: "*",
@@ -25,6 +34,10 @@ server.ready().then(() => {
     // we need to wait for the server to be ready, else `server.io` is undefined
     const socket = new ServerSocket(server.io);
     socket.registerConnectionEvent();
+    instrument(server.io, {
+        auth: false,
+        serverId: "asdasd"
+    });
 });
 
 // get the gameID encoded in the URL.

@@ -29,7 +29,6 @@ export function handleAcceptCall(socket: Socket, io: Server, data: any) {
 
 export function handleEndGame(socket: Socket, io: Server, gameId: string) {
     socket.leave(gameId);
-    console.debug("Room size:", io.sockets.adapter.rooms.get(gameId)?.size);
 }
 
 export interface JoinGameRequest {
@@ -66,7 +65,7 @@ export function handlePlayerJoinsGame(
         payload.socketId = socket.id;
         socket.join(payload.gameId);
 
-        io.sockets.in(payload.gameId).emit(Event.PLAYER_JOINED_ROOM, payload);
+        socket.to(payload.gameId).emit(Event.PLAYER_JOINED_ROOM, payload);
     } else {
         const statusData: StatusJoinDTO = {
             successToJoin: false,
@@ -76,7 +75,6 @@ export function handlePlayerJoinsGame(
         socket.emit(Event.JOIN_STATUS, statusData);
     }
 
-    console.debug("Room size:", room.size);
 }
 
 export async function handleCreateNewGame(
@@ -100,8 +98,8 @@ export async function handleCreateNewGame(
 }
 
 export function handleNewMove(socket: Socket, io: Server, payload: NewMoveDTO) {
-    console.log("payload", payload);
-    io.to(payload.gameId).emit(Event.OPPONENT_MOVE, payload.move);
+    socket.to(payload.gameId).emit(Event.OPPONENT_MOVE, payload);
+    // io.to(payload.gameId).emit(Event.OPPONENT_MOVE, payload.move);
 }
 
 export function handleRequestUserName(socket: Socket, io: Server, gameId: any) {

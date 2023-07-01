@@ -1,6 +1,7 @@
 export enum Event {
+    CONNECT = "connect",
     HANDSHAKE = "handshake",
-    DISCONNECT = "disconnect",
+    DISCONNECT = "diconnect",
     CALL_USER = "callUser",
     ACCEPT_CALL = "acceptCall",
     CALL_ACCEPTED = "callAccepted",
@@ -9,8 +10,8 @@ export enum Event {
     PLAYER_JOINS_GAME = "playerJoinsGame",
     PLAYER_JOINED_ROOM = "playerJoinedRoom",
     CREATE_NEW_GAME = "createNewGame",
-    GAME_END = "endGame",
     START_GAME = "startGame",
+    GAME_END = "endGame",
     NEW_MOVE = "newMove",
     OPPONENT_MOVE = "opponentMove",
     REQUEST_USERNAME = "requestUserName",
